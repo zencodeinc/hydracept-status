@@ -1,0 +1,14 @@
+{
+  "overall": "degraded",
+  "generated_at": "2026-10-09T12:00:00.000Z",
+  "server_time": "2026-10-09T12:01:00.000Z",
+  "stale_after_seconds": 900,
+  "components": {
+    "site": {
+      "status": "degraded",
+      "display_name": "Marketing site",
+      "detail": "wrong html",
+      "history_days": []
+    }
+  }
+}

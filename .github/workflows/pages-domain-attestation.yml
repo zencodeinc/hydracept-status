@@ -1,0 +1,40 @@
+name: pages-domain-attestation
+
+# Runs in public zencodeinc/hydracept-status only. Uses this repo's GITHUB_TOKEN
+# (Pages API is readable here; private hydracept cannot call Pages on another repo).
+# Commits .hydracept/pages-domain-attestation.json for the private ensure-status-dns gate.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-domain-attestation
+  cancel-in-progress: false
+
+jobs:
+  attest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: read
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Verify Pages domain (API) and write attestation
+        run: python scripts/write_status_pages_attestation.py
+      - name: Commit attestation on main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .hydracept/pages-domain-attestation.json
+          if git diff --staged --quiet; then
+            echo "attestation unchanged"
+          else
+            git commit -m "chore(status): refresh Pages domain attestation"
+            git push
+          fi

@@ -1,0 +1,14 @@
+{
+  "overall": "operational",
+  "generated_at": "2026-10-09T10:00:00.000Z",
+  "server_time": "2026-10-09T12:30:00.000Z",
+  "stale_after_seconds": 900,
+  "components": {
+    "api": {
+      "status": "operational",
+      "display_name": "API",
+      "detail": "ok",
+      "history_days": []
+    }
+  }
+}

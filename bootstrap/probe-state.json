@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "generated_at": null,
+  "probe_interval_seconds": 300,
+  "stale_after_seconds": 900,
+  "overall": "unknown",
+  "history_days_retained": 90,
+  "components": {
+    "api": {
+      "display_name": "API",
+      "status": "unknown",
+      "last_checked_at": null,
+      "detail": "Awaiting first probe",
+      "consecutive_failures": 0,
+      "history_days": [],
+      "uptime_percent_90d": null
+    },
+    "site": {
+      "display_name": "Marketing site",
+      "status": "unknown",
+      "last_checked_at": null,
+      "detail": "Awaiting first probe",
+      "consecutive_failures": 0,
+      "history_days": [],
+      "uptime_percent_90d": null
+    },
+    "app": {
+      "display_name": "Studio (app)",
+      "status": "unknown",
+      "last_checked_at": null,
+      "detail": "Awaiting first probe",
+      "consecutive_failures": 0,
+      "history_days": [],
+      "uptime_percent_90d": null
+    },
+    "docs": {
+      "display_name": "Documentation",
+      "status": "unknown",
+      "last_checked_at": null,
+      "detail": "Awaiting first probe",
+      "consecutive_failures": 0,
+      "history_days": [],
+      "uptime_percent_90d": null
+    },
+    "mcp_hosted": {
+      "display_name": "Hosted MCP (/mcp)",
+      "status": "unknown",
+      "last_checked_at": null,
+      "detail": "Awaiting first probe",
+      "consecutive_failures": 0,
+      "history_days": [],
+      "uptime_percent_90d": null
+    },
+    "mcp_compact": {
+      "display_name": "Hosted MCP compact",
+      "status": "unknown",
+      "last_checked_at": null,
+      "detail": "Awaiting first probe",
+      "consecutive_failures": 0,
+      "history_days": [],
+      "uptime_percent_90d": null
+    },
+    "capabilities": {
+      "display_name": "Capability catalog",
+      "status": "unknown",
+      "last_checked_at": null,
+      "detail": "Awaiting first probe",
+      "consecutive_failures": 0,
+      "history_days": [],
+      "uptime_percent_90d": null
+    }
+  }
+}

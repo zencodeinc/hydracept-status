@@ -1,0 +1,3 @@
+# Pinned deps for public hydracept-status GitHub Actions (status-probe Python tests).
+pytest==8.3.4
+pygments==2.18.0

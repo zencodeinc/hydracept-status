@@ -1,0 +1,11 @@
+{
+  "name": "hydracept-status-public-ui",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "linkedom": "^0.18.12"
+  }
+}

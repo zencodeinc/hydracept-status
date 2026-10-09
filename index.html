@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hydracept status</title>
+    <meta name="description" content="Hydracept service status and incident history." />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <h1>Hydracept status</h1>
+        <p class="subtitle">Independent checks of the public API, site, Studio, docs, MCP, and capability catalog.</p>
+      </header>
+      <div id="error-banner" class="error-banner" hidden></div>
+      <div class="overall" aria-live="polite">
+        <span id="overall-pill" class="pill unknown">unknown</span>
+        <p id="overall-meta" class="meta">Loading…</p>
+      </div>
+      <section aria-labelledby="components-heading">
+        <h2 id="components-heading">Components</h2>
+        <div id="components" class="components"></div>
+      </section>
+      <section class="incidents" aria-labelledby="incidents-heading">
+        <h2 id="incidents-heading">Incidents</h2>
+        <div id="incidents-list"></div>
+      </section>
+      <footer>
+        <a href="https://hydracept.com/">hydracept.com</a>
+        ·
+        <a href="https://docs.hydracept.com/">Documentation</a>
+      </footer>
+    </div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
