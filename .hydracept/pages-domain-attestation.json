@@ -1,0 +1,25 @@
+{
+  "attested_at": "2026-10-10T03:16:09.120654Z",
+  "github_repository": "zencodeinc/hydracept-status",
+  "pages": {
+    "build_type": "workflow",
+    "cname": "status.hydracept.com",
+    "html_url": "http://status.hydracept.com/",
+    "https_enforced": false,
+    "protected_domain_state": "verified",
+    "status": null
+  },
+  "pages_deployment": {
+    "created_at": "2026-10-10T03:15:41Z",
+    "environment": "github-pages",
+    "id": 6975420013,
+    "latest_status": {
+      "created_at": "2026-10-10T03:15:53Z",
+      "environment": "github-pages",
+      "id": 19552797033,
+      "state": "success"
+    },
+    "sha": "5500394cd0d67acc6481162768a0eac85afb441b"
+  },
+  "version": 1
+}
