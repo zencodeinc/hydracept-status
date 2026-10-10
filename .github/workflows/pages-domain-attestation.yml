@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      deployments: read
       pages: read
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
@@ -26,8 +27,12 @@ jobs:
         with:
           python-version: "3.12"
       - name: Verify Pages domain (API) and write attestation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: python scripts/write_status_pages_attestation.py
       - name: Commit attestation on main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

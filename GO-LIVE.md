@@ -10,23 +10,24 @@ Anyone with **write access to the public `hydracept-status` repository** could c
 
 The private `hydracept` repo’s default `GITHUB_TOKEN` **cannot** call `GET /repos/zencodeinc/hydracept-status/pages` (cross-repo Pages API returns 404). The DNS workflow reads the public attestation file via the **Contents API** (optionally authenticated to avoid rate limits) and validates commit metadata via the **Commits API**.
 
-The **public** repo runs **`pages-domain-attestation`** (`workflow_dispatch`). That job uses **this repo’s** `GITHUB_TOKEN` (`pages: read`) and requires:
+The **public** repo runs **`pages-domain-attestation`** (`workflow_dispatch`). That job passes **`GITHUB_TOKEN: ${{ github.token }}`** with job permissions **`pages: read`** and **`contents: write`**, then requires:
 
-- `status == "built"`
 - `build_type == "workflow"` (Pages source must be **GitHub Actions**)
-- `status == "built"` (not `null`, `building`, or `errored`)
+- `cname == status.hydracept.com`
+- `protected_domain_state == "verified"` (exactly)
+- A **successful** latest **`github-pages`** deployment (`GET /repos/.../deployments?environment=github-pages` + latest status `state: success`). For Actions-built sites, `GET /pages` often returns `"status": null` even after a good deploy — the gate uses deployment evidence instead of legacy `status == "built"`.
 
-**If `status` or `build_type` is `null` at attestation time:** inspect live Pages state (do not bypass the gate):
+Inspect live state (do not bypass the gate):
 
 ```bash
 gh api repos/zencodeinc/hydracept-status/pages
+gh api 'repos/zencodeinc/hydracept-status/deployments?environment=github-pages&per_page=1'
+gh api repos/zencodeinc/hydracept-status/deployments/<id>/statuses
 ```
 
-Expected before attestation: `"status":"built"` and `"build_type":"workflow"`. If either is `null`, stop — enable Pages → Source → **GitHub Actions**, run **`status-probe`** until deploy succeeds, then re-check the API. If the API still shows `null` after a green deploy, **stop and ask for a reviewed relaxation**; do not commit a hand-edited attestation or weaken the gate locally.
-- `cname == status.hydracept.com`
-- `protected_domain_state == "verified"` (exactly)
+If `build_type` is `null`, enable Pages → Source → **GitHub Actions**, run **`status-probe`** until deploy succeeds, then re-check. If there is no deployment or the latest status is not `success`, stop — do not hand-edit attestation JSON.
 
-It commits `.hydracept/pages-domain-attestation.json` on `main`. Attestation must be **fresh** (≤24h, not future-dated) and bound to that commit.
+It commits `.hydracept/pages-domain-attestation.json` on `main` (author **`github-actions[bot]`**). The file includes `pages_deployment` (id, sha, created_at, latest status) as **evidence at attestation time**. Attestation must be **fresh** (≤24h, not future-dated) and bound to that commit. The private DNS gate does **not** pin the attested deployment id (status-probe redeploys every few minutes and older ids go inactive); it requires the **current** latest `github-pages` deployment on GitHub to have latest status **`success`** before Porkbun changes.
 
 ## Org-level domain verification (TXT)
 
@@ -60,7 +61,7 @@ Probe persistence: orphan branch **`probe-data`**, one commit force-pushed each 
 5. **Custom domain** — `status.hydracept.com` in Pages settings.
 6. **Org/domain TXT verification** — add **`hydracept.com`** in org **Pages** settings; dispatch **`ensure-status-pages-org-txt`** with GitHub’s `_github-pages-challenge-zencodeinc` host and ~30-char hex token; wait until GitHub shows the org domain **verified**.
 7. Public repo: set `HYDRACEPT_STATUS_PAGES_LIVE=1`, run **`status-probe`** once (deploy OK).
-8. Public repo: dispatch **`pages-domain-attestation`**; confirm commit on `main` from `github-actions[bot]` and JSON shows `protected_domain_state: verified`, `build_type: workflow`.
+8. Public repo: dispatch **`pages-domain-attestation`**; confirm commit on `main` from `github-actions[bot]` and JSON shows `protected_domain_state: verified`, `build_type: workflow`, and `pages_deployment.latest_status.state: success`.
 9. Within **24 hours**, private repo: set `HYDRACEPT_STATUS_PAGES_LIVE=1` and `HYDRACEPT_STATUS_PAGES_DOMAIN_VERIFIED=1`, dispatch **`ensure-status-dns`** (Porkbun secrets + `GITHUB_TOKEN` for GitHub API reads).
 10. Wait for DNS + HTTPS; verify `https://status.hydracept.com`.
 11. Land footer/docs/llms links PR after live verification.

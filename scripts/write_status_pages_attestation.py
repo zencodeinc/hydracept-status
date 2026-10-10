@@ -15,6 +15,7 @@ if str(_SCRIPTS) not in sys.path:
 from status_pages_domain_gate import (  # noqa: E402
     ATTESTATION_PATH,
     build_attestation_document,
+    fetch_latest_github_pages_deployment,
     fetch_pages_for_repo,
 )
 
@@ -38,7 +39,8 @@ def main() -> int:
         raise SystemExit("Set --repo or GITHUB_REPOSITORY (public hydracept-status Actions job)")
     token = (os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or "").strip()
     pages = fetch_pages_for_repo(repo, token=token)
-    doc = build_attestation_document(pages, repo=repo)
+    pages_deployment = fetch_latest_github_pages_deployment(repo, token=token)
+    doc = build_attestation_document(pages, repo=repo, pages_deployment=pages_deployment)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(doc, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"Wrote attestation to {args.out} (protected_domain_state=verified, cname={doc['pages']['cname']!r})")

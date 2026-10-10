@@ -13,6 +13,7 @@ from typing import Any
 
 DEFAULT_STATUS_REPO = "zencodeinc/hydracept-status"
 EXPECTED_CNAME = "status.hydracept.com"
+GITHUB_PAGES_DEPLOYMENT_ENV = "github-pages"
 ATTESTATION_PATH = ".hydracept/pages-domain-attestation.json"
 ATTESTATION_REF = "main"
 ATTESTATION_VERSION = 1
@@ -42,14 +43,54 @@ def _parse_github_timestamp(raw: str) -> datetime:
     return moment.astimezone(UTC)
 
 
-def validate_pages_payload(payload: dict[str, Any], *, expected_cname: str = EXPECTED_CNAME) -> None:
-    """Fail closed unless Pages is built, Actions-deployed, cname matches, domain verified."""
+def _invalid_deployment_sha(sha: object) -> bool:
+    return sha is None or not isinstance(sha, str) or not sha.strip()
+
+
+def validate_pages_deployment_evidence(
+    evidence: dict[str, Any],
+    *,
+    expected_environment: str = GITHUB_PAGES_DEPLOYMENT_ENV,
+) -> None:
+    if not isinstance(evidence, dict):
+        raise PagesGateError("pages_deployment evidence must be a JSON object")
+    env = evidence.get("environment")
+    if env != expected_environment:
+        raise PagesGateError(
+            f"Pages deployment environment must be {expected_environment!r}, got {env!r}"
+        )
+    dep_id = evidence.get("id")
+    sha = evidence.get("sha")
+    created_at = evidence.get("created_at")
+    if dep_id is None or _invalid_deployment_sha(sha) or not created_at:
+        raise PagesGateError("pages_deployment missing id, sha, or created_at")
+    latest = evidence.get("latest_status")
+    if not isinstance(latest, dict):
+        raise PagesGateError("pages_deployment missing latest_status object")
+    latest_env = latest.get("environment")
+    if latest_env not in {None, expected_environment}:
+        raise PagesGateError(
+            f"deployment status environment must be {expected_environment!r}, "
+            f"got {latest_env!r}"
+        )
+    state = latest.get("state")
+    if state != "success":
+        raise PagesGateError(
+            f"latest github-pages deployment status must be 'success', got {state!r}"
+        )
+    if not latest.get("created_at"):
+        raise PagesGateError("pages_deployment latest_status missing created_at")
+
+
+def validate_pages_payload(
+    payload: dict[str, Any],
+    *,
+    expected_cname: str = EXPECTED_CNAME,
+    pages_deployment: dict[str, Any] | None = None,
+) -> None:
+    """Fail closed unless Pages domain is verified and live (built or workflow deploy)."""
     if not isinstance(payload, dict):
         raise PagesGateError("Pages payload must be a JSON object")
-
-    status = payload.get("status")
-    if status != "built":
-        raise PagesGateError(f"GitHub Pages status must be 'built', got {status!r}")
 
     cname_raw = payload.get("cname")
     if not cname_raw:
@@ -78,9 +119,40 @@ def validate_pages_payload(payload: dict[str, Any], *, expected_cname: str = EXP
             f"GitHub Pages build_type must be 'workflow' (Actions deploy), got {build_type!r}"
         )
 
+    if pages_deployment is None:
+        raise PagesGateError(
+            "GitHub Pages build_type workflow requires a successful github-pages deployment "
+            "(Pages API status is often null for Actions-built sites)"
+        )
+    validate_pages_deployment_evidence(pages_deployment)
 
-def build_attestation_document(pages_payload: dict[str, Any], *, repo: str) -> dict[str, Any]:
-    validate_pages_payload(pages_payload)
+    status = payload.get("status")
+    if status == "errored":
+        raise PagesGateError(f"GitHub Pages status must not be 'errored', got {status!r}")
+
+
+def build_pages_deployment_evidence(deployment: dict[str, Any], latest_status: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": deployment.get("id"),
+        "sha": deployment.get("sha"),
+        "environment": deployment.get("environment"),
+        "created_at": deployment.get("created_at"),
+        "latest_status": {
+            "id": latest_status.get("id"),
+            "state": latest_status.get("state"),
+            "created_at": latest_status.get("created_at"),
+            "environment": latest_status.get("environment"),
+        },
+    }
+
+
+def build_attestation_document(
+    pages_payload: dict[str, Any],
+    *,
+    repo: str,
+    pages_deployment: dict[str, Any],
+) -> dict[str, Any]:
+    validate_pages_payload(pages_payload, pages_deployment=pages_deployment)
     return {
         "version": ATTESTATION_VERSION,
         "attested_at": datetime.now(tz=UTC).isoformat().replace("+00:00", "Z"),
@@ -93,6 +165,7 @@ def build_attestation_document(pages_payload: dict[str, Any], *, repo: str) -> d
             "https_enforced": pages_payload.get("https_enforced"),
             "html_url": pages_payload.get("html_url"),
         },
+        "pages_deployment": pages_deployment,
     }
 
 
@@ -126,7 +199,10 @@ def validate_attestation_document(doc: dict[str, Any], *, expected_repo: str = D
     pages = doc.get("pages")
     if not isinstance(pages, dict):
         raise PagesGateError("attestation missing pages object")
-    validate_pages_payload(pages)
+    pages_deployment = doc.get("pages_deployment")
+    if not isinstance(pages_deployment, dict):
+        raise PagesGateError("attestation missing pages_deployment object")
+    validate_pages_payload(pages, pages_deployment=pages_deployment)
 
 
 def validate_attestation_commit_binding(doc: dict[str, Any], commit_entry: dict[str, Any]) -> None:
@@ -198,6 +274,50 @@ def fetch_pages_for_repo(repo: str, *, token: str) -> dict[str, Any]:
     return payload
 
 
+def fetch_latest_github_pages_deployment(repo: str, *, token: str | None = None) -> dict[str, Any]:
+    deployments = github_api_get(
+        f"/repos/{repo}/deployments?environment={GITHUB_PAGES_DEPLOYMENT_ENV}&per_page=1",
+        token=token,
+    )
+    if not isinstance(deployments, list) or not deployments:
+        raise PagesGateError(
+            f"no GitHub Deployments found for environment {GITHUB_PAGES_DEPLOYMENT_ENV!r}"
+        )
+    deployment = deployments[0]
+    if not isinstance(deployment, dict):
+        raise PagesGateError("Deployments API returned unexpected entry")
+    dep_env = deployment.get("environment")
+    if dep_env != GITHUB_PAGES_DEPLOYMENT_ENV:
+        raise PagesGateError(
+            f"latest deployment environment is {dep_env!r}, expected {GITHUB_PAGES_DEPLOYMENT_ENV!r}"
+        )
+    dep_id = deployment.get("id")
+    if dep_id is None:
+        raise PagesGateError("latest github-pages deployment missing id")
+    statuses = github_api_get(f"/repos/{repo}/deployments/{dep_id}/statuses", token=token)
+    if not isinstance(statuses, list) or not statuses:
+        raise PagesGateError(f"github-pages deployment {dep_id} has no status updates")
+    latest_status = statuses[0]
+    if not isinstance(latest_status, dict):
+        raise PagesGateError("deployment statuses API returned unexpected entry")
+    evidence = build_pages_deployment_evidence(deployment, latest_status)
+    validate_pages_deployment_evidence(evidence)
+    return evidence
+
+
+def assert_current_github_pages_deployment_live(
+    repo: str,
+    *,
+    token: str | None = None,
+) -> dict[str, Any]:
+    """DNS gate: latest github-pages deployment on GitHub must currently be success.
+
+    Attestation JSON may snapshot an older deployment id; status-probe redeploys often
+    and GitHub marks prior deployments inactive — always evaluate the current latest.
+    """
+    return fetch_latest_github_pages_deployment(repo, token=token)
+
+
 def fetch_attestation_from_public_repo(
     repo: str = DEFAULT_STATUS_REPO,
     path: str = ATTESTATION_PATH,
@@ -261,3 +381,4 @@ def assert_pages_attestation_for_dns(
     commit_entry = fetch_attestation_file_commit(target, att_path, token=auth_tok)
     validate_attestation_document(doc, expected_repo=target)
     validate_attestation_commit_binding(doc, commit_entry)
+    assert_current_github_pages_deployment_live(target, token=auth_tok)
