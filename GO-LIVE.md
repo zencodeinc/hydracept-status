@@ -52,6 +52,41 @@ Probe persistence: orphan branch **`probe-data`**, one commit force-pushed each 
 
 **Stale window:** data older than **3× probe interval** (default 900s) → unknown; HTTP `Date` on `status.json` is the clock.
 
+## Probe schedule reliability (prod coloc)
+
+GitHub **`schedule`** on public repos is best-effort and can skip hours. After go-live, prod coloc runs two **5-minute cron** jobs (same block as `coloc-api-watchdog`, installed by `deploy/scripts/coloc-apply-observability.sh`):
+
+| Job | Script | Purpose |
+|-----|--------|---------|
+| Dispatch | `coloc-status-probe-dispatch.sh` | `workflow_dispatch` **`status-probe`** on `zencodeinc/hydracept-status` when no run is **in progress** (host `flock` + GitHub API). |
+| Staleness | `coloc-status-staleness-watchdog.sh` | Fetches `https://status.hydracept.com/status.json`; if older than the host’s **trusted 900s** stale threshold (not `stale_after_seconds` in the JSON), alerts via **ops webhook / Resend ops email** (deduped). |
+
+**Host env** (`.env.coloc` on prod coloc, not GitHub):
+
+| Variable | Purpose |
+|----------|---------|
+| `HYDRACEPT_STATUS_PAGES_LIVE=1` | Enables both cron jobs (same flag as DNS gate). |
+| `HYDRACEPT_STATUS_PROBE_DISPATCH_TOKEN` | Fine-grained PAT: **`actions:write`** on **`zencodeinc/hydracept-status` only** (no repo contents, no org scope). |
+| `HYDRACEPT_STATUS_GITHUB_REPO` | Optional override (default `zencodeinc/hydracept-status`). |
+| `HYDRACEPT_STATUS_JSON_URL` | Optional override (default `https://status.hydracept.com/status.json`). |
+
+Ops alert dedup state (on the coloc data volume): `status-probe-dispatch-ops.state` and `status-staleness-ops.state`. Failures alert only after **2** consecutive 5-minute checks (configurable). After the first alert, each script sends **at most one alert per hour** (global gap, even when failure classes flap); `dispatch:timeout` and `dispatch:network` count as one **transport** class. A **recovery** notice fires only after an alert was actually sent.
+
+Probes remain **outside-in** (keyless checks inside the public workflow). Coloc only **triggers** that workflow and **monitors** published JSON — it does not invoke paid capabilities or weaken page honesty rules.
+
+**Owner checklist after merge (preferred — no SSH):**
+
+1. Add fine-grained PAT to GitHub **Environment `coloc`** secret `HYDRACEPT_STATUS_PROBE_DISPATCH_TOKEN` (`actions:write` on `zencodeinc/hydracept-status` only).
+2. Run **`deploy-coloc`** on prod so the host monorepo checkout is synced to the `main` tip you care about, then dispatch **`coloc-set-status-probe-token`** from that same **`main` commit** (`github.sha` must equal **host git checkout HEAD**, not `HYDRACEPT_DEPLOY_SHA` in `.env.coloc` — that key updates only on **api-target** deploys and can lag after site/app-only deploys). The job uses Azure OIDC + **managed** VM run command: `az vm run-command create` (public `--script` + `--parameters`, token only in **`--protected-parameters status_probe_token_b64=…`**), then `az vm run-command show --instance-view`, then **`az vm run-command delete`** (always). Do **not** use `az vm run-command invoke` for secrets — azure-cli 2.91 **`invoke` has no `--protected-parameters`** and would fail while echoing the value into stderr.
+3. GitHub masks the secret; runner/az stderr is filtered before printing; job output is only boolean `VERIFY_*` markers plus `STATUS_PROBE_DISPATCH_OUTCOME=` (`dispatched`, `skipped_active`, `skipped_in_progress`, etc.).
+4. Confirm `status-probe-dispatch.log` shows `dispatched` or `skipped_active` / `skipped_in_progress` every ~5m and `status.json` `generated_at` stays fresh. Status-probe crons run on **host Python 3.8+** (stdlib + `scripts/status_probe_*.py`), not the migrate Docker image — host paths must stay valid.
+
+**Azure note:** On Linux, managed run command maps named **parameters** and **protected parameters** to guest environment variables (`expected_deploy_sha`, `hydracept_coloc_repo_dir`, `status_probe_token_b64`). Guest script must not echo secrets. **`show --instance-view`** returns stdout/stderr in `instanceView.output` / `instanceView.error` — the workflow parser whitelists marker lines only. The SHA gate compares `expected_deploy_sha` to **`git rev-parse HEAD`** on the coloc checkout (via `coloc-read-host-checkout-sha.sh`) and requires status-probe deploy scripts on disk. If it fails, markers include `STATUS_PROBE_SHA_EXPECTED` / `STATUS_PROBE_SHA_ACTUAL` and a hint — usually **dispatch before deploy-coloc synced**, or dispatch from a **`main` tip newer/older than the checkout**.
+
+**Do not confuse with `coloc-read-last-deployed-sha.sh`:** that probe (used by **`deploy-coloc`** target detection) resolves the last **full** journal deploy and/or **`HYDRACEPT_DEPLOY_SHA` in `.env.coloc`**. It can read an older API-release SHA while the checkout and `/healthz` already reflect a newer sync — that is expected for narrowed deploys and is **not** what the status-probe token workflow uses.
+
+**Manual fallback (SSH):** mint scoped token → `coloc_upsert_env_coloc` in `.env.coloc` → `bash deploy/scripts/coloc-apply-observability.sh`.
+
 ## Steps
 
 1. Merge the hydracept PR (private monorepo = source of truth).

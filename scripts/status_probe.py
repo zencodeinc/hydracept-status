@@ -10,7 +10,7 @@ import sys
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +19,8 @@ if str(_SCRIPTS) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS))
 
 from site_linked_assets import linked_asset_paths  # noqa: E402
+
+UTC = timezone.utc
 
 _PROBE_ASSET_RE = re.compile(
     r"""(?:src|href)\s*=\s*["'](?P<path>(?:/assets/|\./assets/|assets/)[^"'?#]+)["']""",

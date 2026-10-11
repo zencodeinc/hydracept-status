@@ -56,6 +56,10 @@ describe("isProbeStale", () => {
     );
   });
 
+  it("missing generated_at is always stale", () => {
+    assert.equal(isProbeStale({ stale_after_seconds: 900 }, Date.now(), Date.now()), true);
+  });
+
   it("mutation: ignoring stale check would fail", () => {
     const responseDateMs = Date.parse("2026-10-09T12:20:00.000Z");
     const alwaysFresh = () => false;

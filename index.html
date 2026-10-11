@@ -4,34 +4,64 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Hydracept status</title>
-    <meta name="description" content="Hydracept service status and incident history." />
+    <meta name="description" content="Current health of Hydracept public surfaces, from automated probes." />
+    <meta name="theme-color" content="#070b10" />
+    <link rel="icon" href="./favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="shell">
-      <header>
-        <h1>Hydracept status</h1>
-        <p class="subtitle">Independent checks of the public API, site, Studio, docs, MCP, and capability catalog.</p>
-      </header>
-      <div id="error-banner" class="error-banner" hidden></div>
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="https://hydracept.com/">
+          <img class="brand-mark" src="./hydracept-mark.png" width="38" height="38" alt="" />
+          <span>Hydracept</span>
+        </a>
+        <nav class="site-nav" aria-label="Related">
+          <a href="https://hydracept.com/">Home</a>
+          <a href="https://docs.hydracept.com/">Docs</a>
+          <a href="https://app.hydracept.com/login">Studio</a>
+        </nav>
+      </div>
+    </header>
+    <noscript class="noscript-banner">
+      <p>
+        Live status needs JavaScript. Visit
+        <a href="https://hydracept.com/">hydracept.com</a> or
+        <a href="https://docs.hydracept.com/">the docs</a> for integration help.
+      </p>
+    </noscript>
+    <main class="shell">
+      <div class="page-intro">
+        <h1>System status</h1>
+        <p class="tagline" id="page-tagline"></p>
+      </div>
+      <div id="error-banner" class="error-banner" hidden role="alert"></div>
       <div class="overall" aria-live="polite">
-        <span id="overall-pill" class="pill unknown">unknown</span>
-        <p id="overall-meta" class="meta">Loading…</p>
+        <span id="overall-pill" class="pill unknown">No recent data</span>
+        <p id="overall-meta" class="meta"></p>
       </div>
       <section aria-labelledby="components-heading">
-        <h2 id="components-heading">Components</h2>
+        <h2 id="components-heading">What we check</h2>
         <div id="components" class="components"></div>
       </section>
       <section class="incidents" aria-labelledby="incidents-heading">
         <h2 id="incidents-heading">Incidents</h2>
         <div id="incidents-list"></div>
       </section>
-      <footer>
+      <footer class="site-footer">
+        <span>© Hydracept</span>
         <a href="https://hydracept.com/">hydracept.com</a>
-        ·
         <a href="https://docs.hydracept.com/">Documentation</a>
       </footer>
-    </div>
+    </main>
     <script type="module" src="./app.js"></script>
   </body>
 </html>

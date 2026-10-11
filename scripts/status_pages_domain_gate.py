@@ -8,8 +8,10 @@ import os
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
+
+UTC = timezone.utc
 
 DEFAULT_STATUS_REPO = "zencodeinc/hydracept-status"
 EXPECTED_CNAME = "status.hydracept.com"

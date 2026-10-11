@@ -53,7 +53,16 @@ describe("status page render against fixtures", () => {
     assert.match(scripts[0].getAttribute("src") || "", /^\.\//);
   });
 
-  it("collecting data uptime label", () => {
-    assert.equal(formatUptimeLabel({ history_collecting: true }), "collecting data");
+  it("uptime label absent while history collects", () => {
+    assert.equal(formatUptimeLabel({ history_collecting: true }), null);
+  });
+
+  it("index references only local script", () => {
+    const html = fs.readFileSync(path.join(here, "..", "index.html"), "utf8");
+    const { document } = parseHTML(html);
+    for (const script of document.querySelectorAll("script[src]")) {
+      const src = script.getAttribute("src") || "";
+      assert.ok(!src.includes("google"), src);
+    }
   });
 });

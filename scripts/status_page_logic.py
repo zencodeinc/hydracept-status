@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Literal
+
+UTC = timezone.utc
 
 ComponentStatus = Literal["operational", "degraded", "down", "unknown"]
 OverallStatus = Literal["operational", "degraded", "down", "unknown"]

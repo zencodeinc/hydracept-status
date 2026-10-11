@@ -14,8 +14,12 @@ STATIC_BASENAMES = (
     "app.js",
     "styles.css",
     "status_display.mjs",
+    "status_copy.mjs",
     "CNAME",
     "incidents.json",
+    "hydracept-mark.png",
+    "favicon.ico",
+    "favicon-32.png",
 )
 
 

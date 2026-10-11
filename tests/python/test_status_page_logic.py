@@ -93,8 +93,11 @@ def test_simulated_outage_flips_overall_down() -> None:
 def test_app_js_is_self_contained_and_honest() -> None:
     public = paths.status_public_dir(ROOT)
     js = (public / "app.js").read_text(encoding="utf-8")
+    dom = (public / "status_page_dom.mjs").read_text(encoding="utf-8")
     display = (public / "status_display.mjs").read_text(encoding="utf-8")
-    assert "status_display.mjs" in js
+    assert "status_page_dom.mjs" in js
+    assert "status_display.mjs" in dom
+    assert "status_copy.mjs" in dom
     assert "if (stale) return \"unknown\"" in display
     assert "server_time" not in display or "Never uses probe-written" in display
     assert "google-analytics" not in js
