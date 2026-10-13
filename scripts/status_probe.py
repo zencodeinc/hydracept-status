@@ -275,7 +275,18 @@ def probe_capabilities(cfg: Config, fetch: Fetcher) -> ProbeOutcome:
         return ProbeOutcome(False, str(exc))
 
 
-def _expected_hosted_tools(cfg: Config, fetch: Fetcher) -> list[str]:
+# Path -> agent-context toolsBySurface key. Mirrors scripts/check_public_surface.py:
+# anonymous POST /mcp serves the compact default (#582); /mcp/full is the full
+# specialist list; /mcp/compact is always compact. Names come from agent-context,
+# never a hardcoded count.
+_HOSTED_PATH_SURFACES: tuple[tuple[str, str], ...] = (
+    ("/mcp", "hostedCompact"),
+    ("/mcp/full", "hosted"),
+)
+_COMPACT_PATH_SURFACES: tuple[tuple[str, str], ...] = (("/mcp/compact", "hostedCompact"),)
+
+
+def _tools_by_surface(cfg: Config, fetch: Fetcher) -> dict[str, Any]:
     url = f"{cfg.api_base}/v1/agent-context"
     status, ctype, raw = fetch(
         url,
@@ -287,70 +298,60 @@ def _expected_hosted_tools(cfg: Config, fetch: Fetcher) -> list[str]:
     payload = _json_body(url, ctype, raw)
     mcp = payload.get("mcp") or {}
     by_surface = mcp.get("toolsBySurface") or {}
-    hosted = sorted(str(name) for name in (by_surface.get("hosted") or []))
-    if not hosted:
-        raise ProbeFailure("agent-context missing toolsBySurface.hosted")
-    return hosted
+    if not isinstance(by_surface, dict):
+        raise ProbeFailure("agent-context toolsBySurface is not an object")
+    return by_surface
 
 
-def _expected_compact_tools(cfg: Config, fetch: Fetcher) -> list[str]:
-    url = f"{cfg.api_base}/v1/agent-context"
-    status, ctype, raw = fetch(
-        url,
-        method="GET",
-        headers={"Accept": "application/json"},
-        timeout=cfg.timeout,
+def _expected_names(by_surface: dict[str, Any], key: str) -> list[str]:
+    names = sorted(str(name) for name in (by_surface.get(key) or []))
+    if not names:
+        raise ProbeFailure(f"agent-context missing toolsBySurface.{key}")
+    return names
+
+
+def _list_tool_names(cfg: Config, fetch: Fetcher, path: str) -> list[str]:
+    _mcp_post(cfg, fetch, path, {**_INITIALIZE_BODY, "id": 1})
+    listed = _mcp_post(
+        cfg,
+        fetch,
+        path,
+        {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
     )
-    _expect_status(url, status)
-    payload = _json_body(url, ctype, raw)
-    mcp = payload.get("mcp") or {}
-    by_surface = mcp.get("toolsBySurface") or {}
-    compact = sorted(str(name) for name in (by_surface.get("hostedCompact") or []))
-    if not compact:
-        raise ProbeFailure("agent-context missing toolsBySurface.hostedCompact")
-    return compact
+    tools = listed.get("tools") or []
+    if not isinstance(tools, list):
+        raise ProbeFailure(f"{path} tools/list tools is not a list")
+    return sorted(
+        str(item.get("name")) for item in tools if isinstance(item, dict) and item.get("name")
+    )
+
+
+def _probe_paths(
+    cfg: Config, fetch: Fetcher, surfaces: tuple[tuple[str, str], ...]
+) -> ProbeOutcome:
+    try:
+        by_surface = _tools_by_surface(cfg, fetch)
+        counts: list[str] = []
+        for path, key in surfaces:
+            expected = _expected_names(by_surface, key)
+            actual = _list_tool_names(cfg, fetch, path)
+            if actual != expected:
+                raise ProbeFailure(
+                    f"{path} tools/list mismatch vs toolsBySurface.{key} "
+                    f"(expected {len(expected)}, got {len(actual)})"
+                )
+            counts.append(f"{path} {len(actual)}")
+        return ProbeOutcome(True, "tools/list ok (" + ", ".join(counts) + ")")
+    except ProbeFailure as exc:
+        return ProbeOutcome(False, str(exc))
 
 
 def probe_mcp_hosted(cfg: Config, fetch: Fetcher) -> ProbeOutcome:
-    try:
-        expected = _expected_hosted_tools(cfg, fetch)
-        _mcp_post(cfg, fetch, "/mcp", {**_INITIALIZE_BODY, "id": 1})
-        listed = _mcp_post(
-            cfg,
-            fetch,
-            "/mcp",
-            {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
-        )
-        tools = listed.get("tools") or []
-        if not isinstance(tools, list):
-            raise ProbeFailure("tools/list tools is not a list")
-        actual = sorted(str(item.get("name")) for item in tools if isinstance(item, dict) and item.get("name"))
-        if actual != expected:
-            raise ProbeFailure(
-                f"tools/list mismatch (expected {len(expected)}, got {len(actual)})"
-            )
-        return ProbeOutcome(True, f"/mcp tools/list ok ({len(actual)} tools)")
-    except ProbeFailure as exc:
-        return ProbeOutcome(False, str(exc))
+    return _probe_paths(cfg, fetch, _HOSTED_PATH_SURFACES)
 
 
 def probe_mcp_compact(cfg: Config, fetch: Fetcher) -> ProbeOutcome:
-    try:
-        expected = _expected_compact_tools(cfg, fetch)
-        _mcp_post(cfg, fetch, "/mcp/compact", {**_INITIALIZE_BODY, "id": 1})
-        listed = _mcp_post(
-            cfg,
-            fetch,
-            "/mcp/compact",
-            {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
-        )
-        tools = listed.get("tools") or []
-        actual = sorted(str(item.get("name")) for item in tools if isinstance(item, dict) and item.get("name"))
-        if actual != expected:
-            raise ProbeFailure(f"/mcp/compact tools/list mismatch (expected {len(expected)})")
-        return ProbeOutcome(True, f"/mcp/compact ok ({len(actual)} tools)")
-    except ProbeFailure as exc:
-        return ProbeOutcome(False, str(exc))
+    return _probe_paths(cfg, fetch, _COMPACT_PATH_SURFACES)
 
 
 def _safe_probe(component_key: str, fn: Any, *args: Any, **kwargs: Any) -> ProbeOutcome:
@@ -438,7 +439,7 @@ def mock_fetch_for_scenario(scenario: str) -> Fetcher:
             body = json.loads((kwargs.get("body") or b"{}").decode())
             req_id = body.get("id", 1)
             if body.get("method") == "tools/list":
-                names = ["c1", "c2"] if "/compact" in url else ["tool_a"]
+                names = ["tool_a"] if "/mcp/full" in url else ["c1", "c2"]
                 result = {"tools": [{"name": n} for n in names]}
             else:
                 result = {}

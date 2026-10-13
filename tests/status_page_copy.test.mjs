@@ -7,8 +7,10 @@ import { describe, it } from "node:test";
 import {
   INCIDENTS_EMPTY,
   LOAD_FAILURE_MESSAGE,
+  NOSCRIPT_MESSAGE,
   PAGE_TAGLINE,
   componentPillLabel,
+  formatAge,
   overallPillLabel,
   overallSummary,
 } from "../status_copy.mjs";
@@ -64,5 +66,22 @@ describe("status page copy", () => {
     assert.ok(PAGE_TAGLINE.length < 220);
     assert.match(PAGE_TAGLINE, /We probe the public API/i);
     assert.ok(LOAD_FAILURE_MESSAGE.includes("couldn't load status data"));
+  });
+
+  it("formatAge pluralizes singular units", () => {
+    assert.equal(formatAge(1), "1 second");
+    assert.equal(formatAge(2), "2 seconds");
+    assert.equal(formatAge(59), "59 seconds");
+    assert.equal(formatAge(120), "2 minutes");
+    assert.equal(formatAge(3600), "60 minutes");
+    assert.equal(formatAge(7200), "2 hours");
+    assert.doesNotMatch(formatAge(1), /1 seconds/i);
+  });
+
+  it("static html exposes noscript guidance aligned with copy module", () => {
+    const html = fs.readFileSync(path.join(here, "..", "index.html"), "utf8");
+    assert.match(html, /noscript/i);
+    assert.match(html, /Live status needs JavaScript/i);
+    assert.match(NOSCRIPT_MESSAGE, /Live status needs JavaScript/i);
   });
 });

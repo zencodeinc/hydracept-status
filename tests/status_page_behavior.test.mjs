@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { describe, it } from "node:test";
 
 import {
@@ -88,6 +89,17 @@ describe("component copy when stale", () => {
     );
     assert.match(line, /Last result: healthz ok/);
     assert.doesNotMatch(line, /Checked /);
+  });
+});
+
+describe("incident timeline typography", () => {
+  it("uses em dash separators in DOM renderer", () => {
+    const src = fs.readFileSync(
+      new URL("../status_page_dom.mjs", import.meta.url),
+      "utf8",
+    );
+    assert.match(src, /—/);
+    assert.doesNotMatch(src, /\\u2014/);
   });
 });
 

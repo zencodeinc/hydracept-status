@@ -32,15 +32,25 @@ export function statusPillLabel(status) {
   return overallPillLabel(status);
 }
 
+function pluralUnit(count, singular, pluralForm) {
+  return count === 1 ? singular : pluralForm;
+}
+
 export function formatAge(seconds) {
   if (seconds == null) return "a while";
-  if (seconds < 120) return `${seconds} seconds`;
+  if (seconds < 120) {
+    return `${seconds} ${pluralUnit(seconds, "second", "seconds")}`;
+  }
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 120) return `${minutes} minutes`;
+  if (minutes < 120) {
+    return `${minutes} ${pluralUnit(minutes, "minute", "minutes")}`;
+  }
   const hours = Math.floor(minutes / 60);
-  if (hours < 48) return `${hours} hours`;
+  if (hours < 48) {
+    return `${hours} ${pluralUnit(hours, "hour", "hours")}`;
+  }
   const days = Math.floor(hours / 24);
-  return `${days} days`;
+  return `${days} ${pluralUnit(days, "day", "days")}`;
 }
 
 export function clockSuffix(clockSource) {

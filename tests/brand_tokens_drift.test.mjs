@@ -19,7 +19,10 @@ function normalizeBrandBase(css) {
 
 describe("brand tokens drift", () => {
   it("status tokens.css matches marketing base variables", () => {
-    const pkg = fs.readFileSync(path.join(here, "..", "brand", "marketing-tokens-base.css"), "utf8");
+    const monorepoBrand = path.join(here, "..", "..", "..", "..", "packages", "brand", "tokens.css");
+    const vendored = path.join(here, "..", "brand", "marketing-tokens-base.css");
+    const brandSource = fs.existsSync(monorepoBrand) ? monorepoBrand : vendored;
+    const pkg = fs.readFileSync(brandSource, "utf8");
     const status = fs.readFileSync(path.join(here, "..", "brand", "tokens.css"), "utf8");
     assert.equal(normalizeBrandBase(status), normalizeBrandBase(pkg));
     assert.doesNotMatch(status, /prefers-color-scheme:\s*light/);

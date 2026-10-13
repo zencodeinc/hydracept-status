@@ -59,6 +59,22 @@ def build(
         dest = out_dir / "status.json"
         shutil.copy2(state_file, dest)
         written.append(dest)
+        index_src = src_root / "index.html"
+        if index_src.is_file():
+            import sys
+
+            scripts_dir = Path(__file__).resolve().parent
+            if str(scripts_dir) not in sys.path:
+                sys.path.insert(0, str(scripts_dir))
+            from status_page_static_fallback import inject_from_status_file
+
+            out_index = out_dir / "index.html"
+            out_index.write_text(
+                inject_from_status_file(index_src, state_file),
+                encoding="utf-8",
+            )
+            if out_index not in written:
+                written.append(out_index)
     return written
 
 

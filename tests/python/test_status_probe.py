@@ -45,7 +45,7 @@ def _fetch(url: str, method: str = "GET", **kwargs):  # noqa: ANN001
         method_name = body.get("method")
         req_id = body.get("id", 1)
         if method_name == "tools/list":
-            tools = _COMPACT if "/compact" in url else _HOSTED
+            tools = _HOSTED if "/mcp/full" in url else _COMPACT
             result = {"tools": [{"name": name} for name in tools]}
         else:
             result = {}
