@@ -1,0 +1,424 @@
+{
+  "version": 1,
+  "generated_at": "2026-10-17T23:15:35.939677Z",
+  "probe_interval_seconds": 300,
+  "stale_after_seconds": 900,
+  "overall": "operational",
+  "history_days_retained": 90,
+  "components": {
+    "api": {
+      "display_name": "API",
+      "status": "operational",
+      "last_checked_at": "2026-10-17T23:15:35.939677Z",
+      "detail": "healthz ok",
+      "consecutive_failures": 0,
+      "history_days": [
+        {
+          "date": "2026-10-10",
+          "samples_ok": 8,
+          "samples_total": 8,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-11",
+          "samples_ok": 221,
+          "samples_total": 221,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-12",
+          "samples_ok": 289,
+          "samples_total": 289,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-13",
+          "samples_ok": 292,
+          "samples_total": 292,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-14",
+          "samples_ok": 293,
+          "samples_total": 293,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-15",
+          "samples_ok": 284,
+          "samples_total": 284,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-16",
+          "samples_ok": 294,
+          "samples_total": 294,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-17",
+          "samples_ok": 287,
+          "samples_total": 287,
+          "uptime_ratio": 1.0
+        }
+      ],
+      "uptime_percent_90d": 100.0,
+      "history_collecting": false
+    },
+    "site": {
+      "display_name": "Marketing site",
+      "status": "operational",
+      "last_checked_at": "2026-10-17T23:15:35.939677Z",
+      "detail": "site ok (/assets/main-DGFkuQOZ.js)",
+      "consecutive_failures": 0,
+      "history_days": [
+        {
+          "date": "2026-10-10",
+          "samples_ok": 8,
+          "samples_total": 8,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-11",
+          "samples_ok": 221,
+          "samples_total": 221,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-12",
+          "samples_ok": 289,
+          "samples_total": 289,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-13",
+          "samples_ok": 292,
+          "samples_total": 292,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-14",
+          "samples_ok": 293,
+          "samples_total": 293,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-15",
+          "samples_ok": 284,
+          "samples_total": 284,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-16",
+          "samples_ok": 294,
+          "samples_total": 294,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-17",
+          "samples_ok": 287,
+          "samples_total": 287,
+          "uptime_ratio": 1.0
+        }
+      ],
+      "uptime_percent_90d": 100.0,
+      "history_collecting": false
+    },
+    "app": {
+      "display_name": "Studio (app)",
+      "status": "operational",
+      "last_checked_at": "2026-10-17T23:15:35.939677Z",
+      "detail": "app ok (/assets/favicon.ico)",
+      "consecutive_failures": 0,
+      "history_days": [
+        {
+          "date": "2026-10-10",
+          "samples_ok": 8,
+          "samples_total": 8,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-11",
+          "samples_ok": 221,
+          "samples_total": 221,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-12",
+          "samples_ok": 289,
+          "samples_total": 289,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-13",
+          "samples_ok": 292,
+          "samples_total": 292,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-14",
+          "samples_ok": 293,
+          "samples_total": 293,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-15",
+          "samples_ok": 284,
+          "samples_total": 284,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-16",
+          "samples_ok": 294,
+          "samples_total": 294,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-17",
+          "samples_ok": 287,
+          "samples_total": 287,
+          "uptime_ratio": 1.0
+        }
+      ],
+      "uptime_percent_90d": 100.0,
+      "history_collecting": false
+    },
+    "docs": {
+      "display_name": "Documentation",
+      "status": "operational",
+      "last_checked_at": "2026-10-17T23:15:35.939677Z",
+      "detail": "docs ok (/assets/favicon.ico)",
+      "consecutive_failures": 0,
+      "history_days": [
+        {
+          "date": "2026-10-10",
+          "samples_ok": 8,
+          "samples_total": 8,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-11",
+          "samples_ok": 221,
+          "samples_total": 221,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-12",
+          "samples_ok": 289,
+          "samples_total": 289,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-13",
+          "samples_ok": 292,
+          "samples_total": 292,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-14",
+          "samples_ok": 293,
+          "samples_total": 293,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-15",
+          "samples_ok": 284,
+          "samples_total": 284,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-16",
+          "samples_ok": 294,
+          "samples_total": 294,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-17",
+          "samples_ok": 287,
+          "samples_total": 287,
+          "uptime_ratio": 1.0
+        }
+      ],
+      "uptime_percent_90d": 100.0,
+      "history_collecting": false
+    },
+    "mcp_hosted": {
+      "display_name": "Hosted MCP (/mcp)",
+      "status": "operational",
+      "last_checked_at": "2026-10-17T23:15:35.939677Z",
+      "detail": "tools/list ok (/mcp 9, /mcp/full 37)",
+      "consecutive_failures": 0,
+      "history_days": [
+        {
+          "date": "2026-10-10",
+          "samples_ok": 8,
+          "samples_total": 8,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-11",
+          "samples_ok": 221,
+          "samples_total": 221,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-12",
+          "samples_ok": 289,
+          "samples_total": 289,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-13",
+          "samples_ok": 243,
+          "samples_total": 292,
+          "uptime_ratio": 0.832192
+        },
+        {
+          "date": "2026-10-14",
+          "samples_ok": 293,
+          "samples_total": 293,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-15",
+          "samples_ok": 284,
+          "samples_total": 284,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-16",
+          "samples_ok": 294,
+          "samples_total": 294,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-17",
+          "samples_ok": 287,
+          "samples_total": 287,
+          "uptime_ratio": 1.0
+        }
+      ],
+      "uptime_percent_90d": 97.51,
+      "history_collecting": false
+    },
+    "mcp_compact": {
+      "display_name": "Hosted MCP compact",
+      "status": "operational",
+      "last_checked_at": "2026-10-17T23:15:35.939677Z",
+      "detail": "tools/list ok (/mcp/compact 9)",
+      "consecutive_failures": 0,
+      "history_days": [
+        {
+          "date": "2026-10-10",
+          "samples_ok": 8,
+          "samples_total": 8,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-11",
+          "samples_ok": 221,
+          "samples_total": 221,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-12",
+          "samples_ok": 289,
+          "samples_total": 289,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-13",
+          "samples_ok": 292,
+          "samples_total": 292,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-14",
+          "samples_ok": 293,
+          "samples_total": 293,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-15",
+          "samples_ok": 284,
+          "samples_total": 284,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-16",
+          "samples_ok": 294,
+          "samples_total": 294,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-17",
+          "samples_ok": 287,
+          "samples_total": 287,
+          "uptime_ratio": 1.0
+        }
+      ],
+      "uptime_percent_90d": 100.0,
+      "history_collecting": false
+    },
+    "capabilities": {
+      "display_name": "Capability catalog",
+      "status": "operational",
+      "last_checked_at": "2026-10-17T23:15:35.939677Z",
+      "detail": "27 capabilities",
+      "consecutive_failures": 0,
+      "history_days": [
+        {
+          "date": "2026-10-10",
+          "samples_ok": 8,
+          "samples_total": 8,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-11",
+          "samples_ok": 221,
+          "samples_total": 221,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-12",
+          "samples_ok": 289,
+          "samples_total": 289,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-13",
+          "samples_ok": 292,
+          "samples_total": 292,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-14",
+          "samples_ok": 293,
+          "samples_total": 293,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-15",
+          "samples_ok": 284,
+          "samples_total": 284,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-16",
+          "samples_ok": 294,
+          "samples_total": 294,
+          "uptime_ratio": 1.0
+        },
+        {
+          "date": "2026-10-17",
+          "samples_ok": 287,
+          "samples_total": 287,
+          "uptime_ratio": 1.0
+        }
+      ],
+      "uptime_percent_90d": 100.0,
+      "history_collecting": false
+    }
+  },
+  "min_samples_for_uptime": 144
+}
