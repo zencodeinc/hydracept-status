@@ -30,7 +30,7 @@ def render_static_fallback_html(status_doc: dict[str, Any]) -> str:
         for key, value in components.items()
         if isinstance(value, dict)
     }
-    stale_after = int(status_doc.get("stale_after_seconds") or 900)
+    stale_after = int(status_doc.get("stale_after_seconds") or 2700)
     stale = is_probe_stale(
         str(status_doc.get("generated_at") or ""),
         now=datetime.now(UTC),

@@ -1,7 +1,9 @@
 /** User-facing copy for status.hydracept.com (tested in Node; no DOM). */
 
+// Cadence lives in status.json (probe_interval_seconds) so this stays truthful when
+// it changes; do not hard-code a minute count here.
 export const PAGE_TAGLINE =
-  "We probe the public API, website, Studio, docs, hosted MCP endpoints, and capability list every few minutes.";
+  "We probe the public API, website, Studio, docs, hosted MCP endpoints, and capability list on a fixed schedule.";
 
 export const INCIDENTS_EMPTY = "No incidents posted.";
 
@@ -73,8 +75,8 @@ export function overallSummary(view, doc, formatWhen) {
     return `Our monitors haven't reported in ${age}${clock}. We can't tell if things are healthy right now. Last successful check was ${formatWhen(doc.generated_at)}.`;
   }
   const age = formatAge(view.dataAgeSeconds);
-  const interval = doc.probe_interval_seconds || 300;
-  const staleAfter = doc.stale_after_seconds || 900;
+  const interval = doc.probe_interval_seconds || 1800;
+  const staleAfter = doc.stale_after_seconds || 2700;
   return `Latest probe results from ${formatWhen(doc.generated_at)} (${age} ago). Checks run about every ${Math.round(interval / 60)} minutes; we mark data stale after ${Math.round(staleAfter / 60)} minutes without an update.`;
 }
 

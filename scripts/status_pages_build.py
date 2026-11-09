@@ -21,6 +21,20 @@ STATIC_BASENAMES = (
     "favicon.ico",
     "favicon-32.png",
 )
+# The public status checkout is also the probe workspace. npm ci and pytest
+# leave node_modules and caches next to the site. Those must not be published,
+# and a committed status.json must not overwrite the probe state.
+_SKIP_DIR_NAMES = frozenset(
+    {
+        "node_modules",
+        ".git",
+        ".github",
+        ".pytest_cache",
+        "__pycache__",
+        "tests",
+        "scripts",
+    }
+)
 
 
 def build(
@@ -45,9 +59,9 @@ def build(
         if src.is_dir():
             continue
         rel = src.relative_to(src_root)
-        if rel.parts[0] == "tests" or rel.name in STATIC_BASENAMES:
+        if rel.name in STATIC_BASENAMES or rel.name == "status.json":
             continue
-        if rel.name == "status.json":
+        if any(part in _SKIP_DIR_NAMES for part in rel.parts):
             continue
         dest = out_dir / rel
         dest.parent.mkdir(parents=True, exist_ok=True)

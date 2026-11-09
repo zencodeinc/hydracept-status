@@ -36,7 +36,7 @@ export function isTimestampSkewed(doc, clientNowMs, responseDateMs) {
 export function isProbeStale(doc, clientNowMs, responseDateMs) {
   if (!doc?.generated_at) return true;
   if (isTimestampSkewed(doc, clientNowMs, responseDateMs)) return true;
-  const staleAfterMs = (doc?.stale_after_seconds || 900) * 1000;
+  const staleAfterMs = (doc?.stale_after_seconds || 2700) * 1000;
   const ageMs = probeAgeMs(doc, clientNowMs, responseDateMs);
   return ageMs != null && ageMs > staleAfterMs;
 }

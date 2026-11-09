@@ -1,8 +1,8 @@
 {
   "version": 1,
   "generated_at": null,
-  "probe_interval_seconds": 300,
-  "stale_after_seconds": 900,
+  "probe_interval_seconds": 1800,
+  "stale_after_seconds": 2700,
   "overall": "unknown",
   "history_days_retained": 90,
   "components": {

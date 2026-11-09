@@ -102,3 +102,17 @@ def test_dns_failure_surfaces_as_probe_failure() -> None:
     outcome = probe.probe_api_health(probe.Config(), broken)
     assert not outcome.ok
     assert "dns" in outcome.detail.lower()
+
+
+def test_persisted_state_cannot_pin_a_stale_probe_cadence() -> None:
+    """probe-data is long-lived; a cadence change must reach the published document."""
+    ok = {key: probe.ProbeOutcome(True, "ok") for key, _ in probe.COMPONENT_ORDER}
+    legacy = {
+        "version": 1,
+        "probe_interval_seconds": 300,
+        "stale_after_seconds": 900,
+        "components": {key: {"status": "operational"} for key, _ in probe.COMPONENT_ORDER},
+    }
+    doc = probe.update_status_document(legacy, ok)
+    assert doc["probe_interval_seconds"] == 1800
+    assert doc["stale_after_seconds"] == 2700

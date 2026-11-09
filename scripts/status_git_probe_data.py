@@ -70,8 +70,13 @@ def materialize_probe_state(
     dest.write_bytes(bootstrap.read_bytes())
 
 
-def push_probe_state(repo_dir: Path, state_file: Path, *, remote: str = "origin") -> None:
-    """Replace probe-data with one orphan commit (no unbounded history)."""
+def push_probe_state(repo_dir: Path, state_file: Path, *, remote: str = "origin") -> str:
+    """Replace probe-data with one orphan commit and return that commit's full SHA.
+
+    deploy-pages uses this SHA as ``pages_build_version``. It has to be a commit
+    that exists in the status repo. A made-up version string is rejected, and the
+    main branch SHA does not change when a probe runs.
+    """
     if not state_file.is_file():
         raise SystemExit(f"missing state file: {state_file}")
     repo_dir = repo_dir.resolve()
@@ -103,7 +108,7 @@ def push_probe_state(repo_dir: Path, state_file: Path, *, remote: str = "origin"
         _run(["git", *bot, "add", STATE_REL.as_posix()], cwd=worktree)
         diff = _run(["git", "diff", "--staged", "--quiet"], cwd=worktree, check=False)
         if diff.returncode == 0:
-            return
+            raise SystemExit("probe state produced no commit to publish")
         _run(["git", *bot, "commit", "-m", "chore(status): probe state"], cwd=worktree)
         pushed = _run(
             ["git", "push", "--force", remote, f"HEAD:{PROBE_DATA_BRANCH}"],
@@ -113,6 +118,11 @@ def push_probe_state(repo_dir: Path, state_file: Path, *, remote: str = "origin"
         if pushed.returncode != 0:
             detail = (pushed.stderr or pushed.stdout or "git push --force failed").strip()
             raise SystemExit(detail)
+        sha = _run(["git", "rev-parse", "HEAD"], cwd=worktree).stdout.strip()
+        if len(sha) != 40 or any(ch not in "0123456789abcdef" for ch in sha):
+            raise SystemExit(f"probe-data commit is not a full sha: {sha}")
+        print(f"pages_build_version {sha}")
+        return sha
     finally:
         _run(["git", "worktree", "remove", "--force", str(worktree)], cwd=repo_dir, check=False)
         shutil.rmtree(worktree, ignore_errors=True)

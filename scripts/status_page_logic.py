@@ -12,9 +12,20 @@ ComponentStatus = Literal["operational", "degraded", "down", "unknown"]
 OverallStatus = Literal["operational", "degraded", "down", "unknown"]
 
 CONSECUTIVE_FAILURES_FOR_DOWN = 3
-DEFAULT_PROBE_INTERVAL_SECONDS = 300
-STALE_AFTER_INTERVAL_MULTIPLIER = 3
-DEFAULT_STALE_AFTER_SECONDS = DEFAULT_PROBE_INTERVAL_SECONDS * STALE_AFTER_INTERVAL_MULTIPLIER
+# Must match the coloc dispatch cron (deploy/scripts/coloc-apply-observability.sh).
+# 30 minutes, not 5: GitHub bills a full minute for every job regardless of run
+# time, so ~288 daily probes at ~5s each billed ~100 minutes/day for ~10 minutes of
+# work. Do not lower this back without the billing math in front of you.
+DEFAULT_PROBE_INTERVAL_SECONDS = 1800
+# Stale after one and a half intervals (45 min). The probe's own duration plus the
+# full interval must still fit inside the threshold, otherwise normal operation
+# between probes reads as stale and the watchdog pages every cycle. At 30 min
+# cadence this tolerates a probe running ~15 min late, and still fires when one
+# dispatch is genuinely missed (age would pass 60 min at the next check).
+STALE_AFTER_INTERVAL_MULTIPLIER = 1.5
+DEFAULT_STALE_AFTER_SECONDS = int(
+    DEFAULT_PROBE_INTERVAL_SECONDS * STALE_AFTER_INTERVAL_MULTIPLIER
+)
 HISTORY_DAYS = 90
 MIN_SAMPLES_FOR_UPTIME = 144
 

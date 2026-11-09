@@ -517,9 +517,13 @@ def update_status_document(
     doc["generated_at"] = checked_at
     doc.pop("server_time", None)
     doc["min_samples_for_uptime"] = MIN_SAMPLES_FOR_UPTIME
-    interval = int(doc.get("probe_interval_seconds") or DEFAULT_PROBE_INTERVAL_SECONDS)
-    doc["probe_interval_seconds"] = interval
-    doc["stale_after_seconds"] = interval * STALE_AFTER_INTERVAL_MULTIPLIER
+    # Always author the cadence from the code constant, never inherit it from
+    # persisted state: probe-data is long-lived, so an inherited value would keep the
+    # published page advertising the previous schedule after a cadence change.
+    doc["probe_interval_seconds"] = DEFAULT_PROBE_INTERVAL_SECONDS
+    doc["stale_after_seconds"] = int(
+        DEFAULT_PROBE_INTERVAL_SECONDS * STALE_AFTER_INTERVAL_MULTIPLIER
+    )
     doc["overall"] = overall_from_components(display_statuses, stale=False)
     doc["history_days_retained"] = HISTORY_DAYS
     return doc
