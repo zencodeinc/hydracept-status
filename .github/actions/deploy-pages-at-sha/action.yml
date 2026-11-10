@@ -1,0 +1,45 @@
+name: Deploy GitHub Pages at a commit
+description: >-
+  Run the pinned actions/deploy-pages bundle with pages_build_version set to
+  a commit that exists in this repo. The runner injects ACTIONS_RUNTIME_TOKEN
+  only because this file is an action. It also resets GITHUB_SHA to the
+  workflow SHA before the process starts, so the probe-data SHA is applied
+  in-process before deploy-pages reads it.
+inputs:
+  pages_build_version:
+    description: Full lowercase commit SHA to send as pages_build_version.
+    required: true
+  deploy_pages_pin:
+    description: actions/deploy-pages commit to load in this process.
+    required: false
+    default: "d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e"
+  token:
+    description: GitHub token used to create the Pages deployment.
+    required: true
+    default: ${{ github.token }}
+  timeout:
+    description: Milliseconds before the deployment is cancelled.
+    required: false
+    default: "600000"
+  error_count:
+    description: Status-report errors tolerated before cancelling.
+    required: false
+    default: "10"
+  reporting_interval:
+    description: Milliseconds between deployment status reports.
+    required: false
+    default: "5000"
+  artifact_name:
+    description: Pages artifact uploaded by actions/upload-pages-artifact.
+    required: false
+    default: github-pages
+  preview:
+    description: Deploy as a Pages preview site.
+    required: false
+    default: "false"
+outputs:
+  page_url:
+    description: URL of the deployed GitHub Pages site.
+runs:
+  using: node20
+  main: index.cjs
